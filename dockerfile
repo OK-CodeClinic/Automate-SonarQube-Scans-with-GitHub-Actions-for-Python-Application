@@ -10,7 +10,8 @@ COPY requirements.txt ./
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
+# Copy the rest of the application code into the containers
+
 COPY . .
 
 # Expose port 5000
