@@ -109,7 +109,13 @@ jobs:
         run: |
           zip -r deploy.zip Dockerrun.aws.json
 
+      - name: Check if deploy.zip exists in S3
+        id: check_s3
+        run: |
+          aws s3 ls s3://vote-beanstalk/deploy.zip || echo "Not Found" > s3_status.txt
+
       - name: Upload the zip file to S3
+        if: steps.check_s3.outputs.status == 'Not Found'
         run: |
           aws s3 cp deploy.zip s3://vote-beanstalk/deploy.zip
 
