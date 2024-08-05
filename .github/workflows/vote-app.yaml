@@ -14,18 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2 
 
-      # Setup sonar-scanner
-      - name: Setup SonarQube
-        uses: warchant/setup-sonar-scanner@v7
-   # with:
-          # sonar-version: '4.8.0.2856'  # Use a specific version if necessary
-
-      # Run sonar-scanner
       - name: SonarQube Scan
-        run: |
-          sonar-scanner \
-            -Dsonar.host.url=${{ secrets.SONAR_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-            -Dsonar.sources=. \
-            -Dsonar.python.version=3.9
+        uses: kitabisa/sonarqube-action@master
+        with:
+          login: ${{ secrets.SONAR_TOKEN }}
+         ## host: ${{ secrets.SONAR_URL }}
 
