@@ -1,4 +1,4 @@
-name: Vote App Pipeline  to Elastic Beanstalk
+name: Vote App Pipeline to Elastic Beanstalk
 
 on:
   push:
@@ -6,18 +6,15 @@ on:
       - main
 
 jobs:
+  SonarQubeTrigger:
+    name: SonarQube Trigger
+    runs-on: ubuntu-latest
 
-    SonarQubeTrigger:
-        - name: SonarQube Trigger
-        - runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2 
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@master
-
-            ## Scan Code 
-
-            - name: SonarQube Scan
-              uses: kitabisa/sonarqube-action@master
-              with:
-                login: ${{ secrets.SONARQUBE_TOKEN }}
+      - name: SonarQube Scan
+        uses: kitabisa/sonarqube-action@v1 
+        with:
+          login: ${{ secrets.SONARQUBE_TOKEN }}
