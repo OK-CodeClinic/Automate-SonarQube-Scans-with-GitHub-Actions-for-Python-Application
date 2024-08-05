@@ -1,3 +1,5 @@
+## Auth: Kehinde Omokungbe
+
 import mysql.connector
 from config import Config
 

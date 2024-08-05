@@ -1,3 +1,6 @@
+## file: app.py
+## Auth: Kehinde Omokungbe
+
 from flask import Flask, render_template, redirect, url_for
 from config import Config
 from models import get_all_candidates, get_candidate, vote_for_candidate

@@ -1,3 +1,5 @@
+## Auth: Kehinde Omokungbe
+
 import os
 
 class Config:
