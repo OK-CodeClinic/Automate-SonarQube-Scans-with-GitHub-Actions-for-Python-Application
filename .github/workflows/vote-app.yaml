@@ -26,3 +26,29 @@ jobs:
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.sources=. \
             -Dsonar.python.version=3.9
+
+
+  Build-Docker-Image:
+        name: Build Docker Image
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+      
+            - name: Build Docker image
+              run: docker build -t vote_app .
+      
+            - name: Log in to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+      
+            - name: Tag Docker image
+              run: |
+                docker tag vote_app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/vote_app:latest
+      
+            - name: Push to Amazon ECR
+              run: |
+                docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/vote_app:latest
+      
+
