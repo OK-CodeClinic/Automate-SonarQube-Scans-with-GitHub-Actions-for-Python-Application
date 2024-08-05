@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Results{% endblock %}
+
+{% block content %}
+    <h1 class="mt-5">Congress Election Results</h1>
+    <div class="row mt-3">
+        {% for candidate in candidates %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ candidate.name }}</h5>
+                        <p class="card-text">Votes: {{ candidate.votes }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

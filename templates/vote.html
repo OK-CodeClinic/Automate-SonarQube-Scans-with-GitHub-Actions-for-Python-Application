@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Vote for your Congress Man{% endblock %}
+
+{% block content %}
+    <h1 class="mt-5">Vote for {{ candidate.name }}</h1>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+{% endblock %}
