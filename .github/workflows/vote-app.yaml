@@ -54,6 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: Build-Docker-Image
 
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -87,10 +88,10 @@ jobs:
           zip -r deploy.zip Dockerrun.aws.json
 
           # Upload the zip file to S3
-          aws s3 cp deploy.zip s3://my-bucket/deploy.zip
+          aws s3 cp deploy.zip s3://vote-beanstalk/deploy.zip
 
           # Create a new application version in Elastic Beanstalk
-          aws elasticbeanstalk create-application-version --application-name vote_app --version-label $GITHUB_SHA --source-bundle S3Bucket=my-bucket,S3Key=deploy.zip
+          aws elasticbeanstalk create-application-version --application-name vote_app --version-label $GITHUB_SHA --source-bundle S3Bucket=vote-beanstalk,S3Key=deploy.zip
 
           # Update the Elastic Beanstalk environment to use the new version
-          aws elasticbeanstalk update-environment --application-name vote_app --environment-name my-environment --version-label $GITHUB_SHA
+          aws elasticbeanstalk update-environment --application-name vote_app --environment-name Development --version-label $GITHUB_SHA
