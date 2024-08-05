@@ -15,6 +15,6 @@ jobs:
         uses: actions/checkout@v2 
 
       - name: SonarQube Scan
-        uses: kitabisa/sonarqube-action@v1 
+        uses: kitabisa/sonarqube-action@master
         with:
           login: ${{ secrets.SONARQUBE_TOKEN }}
