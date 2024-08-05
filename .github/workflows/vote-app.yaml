@@ -49,10 +49,37 @@ jobs:
           dockerfile: vote-app/Dockerfile 
           context: vote-app/
 
+  Create-EB-Application:
+    name: Create Elastic Beanstalk Application
+    runs-on: ubuntu-latest
+    needs: Build-Docker-Image
+
+    steps:
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Create Elastic Beanstalk Application and Environment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Check if the application exists and create if not
+          if ! aws elasticbeanstalk describe-applications --application-names vote_app --region $AWS_REGION >/dev/null 2>&1; then
+            aws elasticbeanstalk create-application --application-name vote_app --region $AWS_REGION
+          fi
+
+          # Check if the environment exists and create if not
+          if ! aws elasticbeanstalk describe-environments --application-name vote_app --environment-names Development --region $AWS_REGION >/dev/null 2>&1; then
+            aws elasticbeanstalk create-environment --application-name vote_app --environment-name Development --solution-stack-name "64bit Amazon Linux 2 v3.5.5 running Docker" --region $AWS_REGION
+          fi
+
   Deploy:
     name: Deploy to Elastic Beanstalk
     runs-on: ubuntu-latest
-    needs: Build-Docker-Image
+    needs: Create-EB-Application
 
     steps:
       - name: Checkout repository
@@ -63,29 +90,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y awscli
 
-      - name: Create Elastic Beanstalk Application
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Create Dockerrun.aws.json file
         run: |
-          # Create Elastic Beanstalk application if it doesn't exist
-          if ! aws elasticbeanstalk describe-applications --application-names vote_app --region $AWS_REGION >/dev/null 2>&1; then
-            aws elasticbeanstalk create-application --application-name vote_app --region $AWS_REGION
-          fi
-
-          # Create Elastic Beanstalk environment if it doesn't exist
-          if ! aws elasticbeanstalk describe-environments --application-name vote_app --environment-names Development --region $AWS_REGION >/dev/null 2>&1; then
-            aws elasticbeanstalk create-environment --application-name vote_app --environment-name Development --solution-stack-name "64bit Amazon Linux 2 v3.5.5 running Docker" --region $AWS_REGION
-          fi
-
-      - name: Deploy to Elastic Beanstalk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          # Create Dockerrun.aws.json file with the ECR image details
           echo '{
             "AWSEBDockerrunVersion": "1",
             "Image": {
@@ -99,14 +105,21 @@ jobs:
             ]
           }' > Dockerrun.aws.json
 
-          # Zip the Dockerrun.aws.json file
+      - name: Zip the Dockerrun.aws.json file
+        run: |
           zip -r deploy.zip Dockerrun.aws.json
 
-          # Upload the zip file to S3
+      - name: Upload the zip file to S3
+        run: |
           aws s3 cp deploy.zip s3://vote-beanstalk/deploy.zip
 
-          # Create a new application version in Elastic Beanstalk
-          aws elasticbeanstalk create-application-version --application-name vote_app --version-label $GITHUB_SHA --source-bundle S3Bucket=vote-beanstalk,S3Key=deploy.zip
-
-          # Update the Elastic Beanstalk environment to use the new version
-          aws elasticbeanstalk update-environment --application-name vote_app --environment-name Development --version-label $GITHUB_SHA
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: vote_app
+          environment_name: Development
+          version_label: $GITHUB_SHA
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: deploy.zip
