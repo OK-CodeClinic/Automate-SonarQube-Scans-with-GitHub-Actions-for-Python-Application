@@ -23,8 +23,10 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r requirements.txt
 
-      - name: Test
-        uses: onichandame/python-test-action@master
+      - name: Test with pytest
+        run: |
+            pip install pytest
+            pytest
 
-
+            
     
