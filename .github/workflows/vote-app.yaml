@@ -43,7 +43,7 @@ jobs:
           region: ${{ secrets.AWS_REGION }}
           tags: latest,${{ github.run_number }}
           daemon_off: false
-          dockerfile: vote-app/Dockerfile
+          dockerfile: vote-app/Dockerfile ## specify your directory
           context: ./
 
 
