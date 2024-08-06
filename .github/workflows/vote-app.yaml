@@ -106,7 +106,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: vote_app
-          environment_name: Voteapp-env
+          environment_name: prod
           version_label: ${{ env.VERSION_LABEL }}
           region: ${{ secrets.AWS_REGION }}
           deployment_package: deploy.zip
