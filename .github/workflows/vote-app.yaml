@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2 
 
       - name: Setup SonarQube
         uses: warchant/setup-sonar-scanner@v7
@@ -44,7 +44,7 @@ jobs:
           region: ${{ secrets.AWS_REGION }}
           tags: latest,${{ github.run_number }}
           daemon_off: false
-          dockerfile: vote-app/Dockerfile
+          dockerfile: vote-app/Dockerfile 
           context: vote-app/
 
   Deploy:
@@ -80,22 +80,25 @@ jobs:
         run: |
           zip -r deploy.zip Dockerrun.aws.json
 
+      - name: Generate unique version tag
+        id: version
+        run: echo "VERSION_TAG=${{ github.run_number }}" >> $GITHUB_ENV
+
       - name: Upload the zip file to S3
         run: |
-          # Generate a unique version tag based on the current timestamp and GitHub run number
-          VERSION_TAG=$(date +%Y%m%d%H%M%S)-${{ github.run_number }}
           aws s3 cp deploy.zip s3://vote-beanstalk/deploy-$VERSION_TAG.zip
 
       - name: Deploy to Elastic Beanstalk
         uses: Amraneze/aws-beanstalk-deploy@master
         with:
           region: ${{ secrets.AWS_REGION }}
-          environment_name: test
-          application_name: vote_app-cicd
+          environment_name: Voteapp-env
+          application_name: vote_app
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3_bucket_name: vote-beanstalk
           s3_file_path: deploy-$VERSION_TAG.zip
-          ebs_version_label: $VERSION_TAG
-          ebs_description: "Deployment version $VERSION_TAG"
-          ebs_wait_for_env_to_be_green: false
+          ebs_version_label: ${{ github.run_number }}
+          ebs_description: "Deploying version ${{ github.run_number }} of the application"
+          ebs_wait_for_env_to_be_green: true
+          use_same_version: true
