@@ -103,7 +103,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3_bucket_name: vote-beanstalk
-          s3_file_path: deploy-${{ env.VERSION_TAG }}.zip
+          s3_file_path: s3://vote-beanstalk/deploy-${{ env.VERSION_TAG }}.zip
           ebs_version_label: ${{ env.VERSION_TAG }}
           ebs_description: "Deploying version ${{ env.VERSION_TAG }} of the application"
           ebs_wait_for_env_to_be_green: true
