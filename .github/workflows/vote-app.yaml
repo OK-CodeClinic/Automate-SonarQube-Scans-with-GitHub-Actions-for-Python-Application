@@ -98,8 +98,8 @@ jobs:
         uses: Amraneze/aws-beanstalk-deploy@master
         with:
           region: ${{ secrets.AWS_REGION }}
-          environment_name: Voteapp-env
-          application_name: vote_app
+          environment_name: test
+          application_name: cicd-vote_app
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3_bucket_name: vote-beanstalk
