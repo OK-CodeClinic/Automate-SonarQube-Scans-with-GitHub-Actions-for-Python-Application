@@ -14,11 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Setup sonar-scanner
       - name: Setup SonarQube
         uses: warchant/setup-sonar-scanner@v7
 
-      # Run sonar-scanner
       - name: SonarQube Scan
         run: |
           sonar-scanner \
@@ -82,31 +80,22 @@ jobs:
         run: |
           zip -r deploy.zip Dockerrun.aws.json
 
-      - name: Generate unique version label
-        id: generate_version
-        run: echo "VERSION_LABEL=$(date +%s)-${{ github.run_number }}" >> $GITHUB_ENV
-
-      - name: Check if deploy.zip exists in S3
-        id: check_s3
-        run: |
-          if aws s3 ls s3://vote-beanstalk/deploy.zip; then
-            echo "Found" > s3_status.txt
-          else
-            echo "Not Found" > s3_status.txt
-          fi
-
       - name: Upload the zip file to S3
-        if: steps.check_s3.outputs.status == 'Not Found'
         run: |
-          aws s3 cp deploy.zip s3://vote-beanstalk/deploy.zip
+          # Generate a unique version tag based on the current timestamp and GitHub run number
+          VERSION_TAG=$(date +%Y%m%d%H%M%S)-${{ github.run_number }}
+          aws s3 cp deploy.zip s3://vote-beanstalk/deploy-$VERSION_TAG.zip
 
       - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v22
+        uses: Amraneze/aws-beanstalk-deploy@master
         with:
+          region: ${{ secrets.AWS_REGION }}
+          environment_name: test
+          application_name: vote_app-cicd
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: vote_app
-          environment_name: prod
-          version_label: ${{ env.VERSION_LABEL }}
-          region: ${{ secrets.AWS_REGION }}
-          deployment_package: deploy.zip
+          s3_bucket_name: vote-beanstalk
+          s3_file_path: deploy-$VERSION_TAG.zip
+          ebs_version_label: $VERSION_TAG
+          ebs_description: "Deployment version $VERSION_TAG"
+          ebs_wait_for_env_to_be_green: false
