@@ -80,13 +80,11 @@ jobs:
         run: |
           zip -r deploy.zip Dockerrun.aws.json
 
-      - name: Generate unique version tag
+      - name: Generate a unique version tag
         id: version
         run: echo "VERSION_TAG=${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Upload the zip file to S3
-        env:
-          VERSION_TAG: ${{ env.VERSION_TAG }}
         run: |
           aws s3 cp deploy.zip s3://vote-beanstalk/deploy-${{ env.VERSION_TAG }}.zip
 
@@ -100,7 +98,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           s3_bucket_name: vote-beanstalk
           s3_file_path: deploy-${{ env.VERSION_TAG }}.zip
-          ebs_version_label: ${{ github.run_number }}
-          ebs_description: "Deploying version ${{ github.run_number }} of the application"
+          ebs_version_label: ${{ env.VERSION_TAG }}
+          ebs_description: "Deploying version ${{ env.VERSION_TAG }} of the application"
           ebs_wait_for_env_to_be_green: true
           use_same_version: true
